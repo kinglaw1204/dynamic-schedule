@@ -16,3 +16,4 @@ dynamic-schedule是一款轻量级调度框架，它主要解决传统调度框�
  * [ ] [支持定时任务持久化](#)
  * [ ] [支持分布式模式下故障转移](#)
 ## 联系作者
+- [kinglaw1204@gmail.com](mailto:kinglaw1204@gmail.com)
