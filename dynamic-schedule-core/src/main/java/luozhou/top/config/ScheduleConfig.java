@@ -18,9 +18,15 @@ import java.util.concurrent.TimeUnit;
 public class ScheduleConfig {
     private static final String EXECUTOR_POOL_NAME = "executor-pool";
     private static final String JOB_POOL_NAME = "job-pool";
+    private static ScheduleConfig config;
+    /***默认核心线程数*/
     private int defaultCoreThreadNum = 4;
+    /**默认最大工作线程数*/
     private int defaultMaxThreadNum = 10;
+    /**默认的调度策略*/
     private IStrategy defaultStrategy;
+    /**持久化模式*/
+    private boolean persistence = false;
     public ScheduleConfig() {
     }
 
@@ -35,7 +41,12 @@ public class ScheduleConfig {
         Scheduler scheduler = new Scheduler(DefaultWorker.getWorker(), executor);
         ThreadPoolExecutor jobPool = scheduleThreadPoolFactory.createThreadPool(JOB_POOL_NAME, 1, 1, 0L, TimeUnit.SECONDS);
         jobPool.submit(scheduler);
+        config=this;
+        //TODO:需要判断是否有持久化的job，需要fresh到Worker中
     }
 
+    public static ScheduleConfig getConfig(){
+        return config;
+    }
 }
 
