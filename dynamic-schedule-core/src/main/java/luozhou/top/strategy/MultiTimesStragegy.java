@@ -1,5 +1,6 @@
 package luozhou.top.strategy;
 
+import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -13,6 +14,10 @@ public class MultiTimesStragegy implements IStrategy {
      * 设置执行时间间隔，单位是毫秒，比如间隔是一秒，执行三次，数组设置元素为 [1000,2000,3000] */
     private long[] times;
     private int pos = 0;
+
+    public MultiTimesStragegy(long[] times) {
+        this.times = times;
+    }
 
     @Override
     public Long getNextSecond() {
@@ -41,6 +46,10 @@ public class MultiTimesStragegy implements IStrategy {
 
     public int getPos() {
         return pos;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(JSON.toJSON(new MultiTimesStragegy(new long[]{1000, 2000, 3000})));
     }
 
 }

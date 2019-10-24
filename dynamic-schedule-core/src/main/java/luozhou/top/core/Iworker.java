@@ -7,13 +7,20 @@ package luozhou.top.core;
  **/
 public interface Iworker {
 
-    /**
+    /** 添加job
      * @param job
      */
     void addJob(AbstractJob job);
 
-    /**
+    /** 获取任务job
      * @return job
      */
     AbstractJob getJob() throws InterruptedException;
+
+
+    /** 获取持久化job
+     * @return job
+     * @throws InterruptedException
+     */
+    AbstractJob getPersistJob() throws InterruptedException;
 }
