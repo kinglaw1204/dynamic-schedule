@@ -15,7 +15,7 @@ public interface JobPersistenceService {
      * @param job,clz
      * @return
      */
-    boolean insert(AbstractJob job,Class cls);
+    boolean insert(AbstractJob job);
 
     /** 根据job信息更新
      * @param job

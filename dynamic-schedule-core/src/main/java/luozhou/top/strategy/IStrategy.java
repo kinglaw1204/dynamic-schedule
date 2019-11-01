@@ -11,12 +11,12 @@ public interface IStrategy {
      *
      * @return 距离现在执行的秒数
      */
-    Long getNextSecond();
+    Long doGetNextSecond();
 
     /**
      * 获取当前的执行时间
      *
      * @return
      */
-    Long getCurrentSecond();
+    Long doGetCurrentSecond();
 }

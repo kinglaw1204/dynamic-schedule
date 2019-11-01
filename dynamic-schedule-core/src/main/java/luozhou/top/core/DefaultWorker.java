@@ -26,7 +26,7 @@ public class DefaultWorker implements Iworker {
     @Override
     public void addJob(AbstractJob job) {
         ScheduleConfig config =ScheduleConfig.getConfig();
-        long nextSecond = job.getStrategy().getNextSecond();
+        long nextSecond = job.getStrategy().doGetNextSecond();
         if (nextSecond > -1L) {
             job.setTimeStamp(nextSecond + System.currentTimeMillis());
             queue.add(job);
