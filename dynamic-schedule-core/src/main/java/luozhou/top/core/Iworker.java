@@ -12,6 +12,10 @@ public interface Iworker {
      */
     void addJob(AbstractJob job);
 
+    /**添加 持久化job
+     * @param job
+     */
+    void addPersistJob(AbstractJob job);
     /** 获取任务job
      * @return job
      */
@@ -22,5 +26,5 @@ public interface Iworker {
      * @return job
      * @throws InterruptedException
      */
-    AbstractJob getPersistJob() throws InterruptedException;
+    void removePersistJob(AbstractJob job) ;
 }

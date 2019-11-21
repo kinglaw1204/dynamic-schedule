@@ -1,6 +1,5 @@
 package luozhou.top.strategy;
 
-import com.alibaba.fastjson.JSON;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -44,7 +43,4 @@ public class MultiTimesStragegy implements IStrategy {
         return times[pos];
     }
 
-    public static void main(String[] args) {
-        System.out.println(JSON.toJSONString(new MultiTimesStragegy()));
-    }
 }

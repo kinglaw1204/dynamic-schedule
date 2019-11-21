@@ -2,13 +2,14 @@ package luozhou.top.core.persistence.config;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import luozhou.top.config.ScheduleConfig;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- * @description:
+ * @description: 数据库连接池配置
  * @author: luozhou
  * @create: 2019-10-15 11:00
  **/
@@ -17,7 +18,7 @@ public class HikariCPDataSource {
     private static HikariDataSource ds;
 
     static {
-        config.setJdbcUrl("jdbc:sqlite:/Users/luozhou/Documents/project/dynamic-schedule/dynamic-schedule.sqlite");
+        config.setJdbcUrl(ScheduleConfig.getConfig().getJdbcUrl());
         config.addDataSourceProperty("cachePrepStmts", "true");
         config.addDataSourceProperty("prepStmtCacheSize", "250");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");

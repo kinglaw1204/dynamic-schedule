@@ -2,11 +2,13 @@ package luozhou.top.core;
 
 import lombok.extern.slf4j.Slf4j;
 import luozhou.top.constant.JobStatus;
+import luozhou.top.core.persistence.service.JobPersistenceService;
+import luozhou.top.core.persistence.service.impl.JobPersistenceServiceImpl;
 
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
- * @description: 调度器,调度器只保证任务在正确的时间内调度到业务系统，业务系统如果处理逻辑时间大于下次调度的时间，就会出现并发情况，业务层需要做好幂等性或者线程安全。
+ * @description: 调度器, 调度器只保证任务在正确的时间内调度到业务系统，业务系统如果处理逻辑时间大于下次调度的时间，就会出现并发情况，业务层需要做好幂等性或者线程安全。
  * @author: luozhou
  * @create: 2019-09-09 15:52
  **/
@@ -17,6 +19,7 @@ public class Scheduler implements Runnable, Comparable {
     private Iworker worker;
 
     private ThreadPoolExecutor executor;
+    private JobPersistenceService service = new JobPersistenceServiceImpl();
 
     public Scheduler(Iworker worker, ThreadPoolExecutor executor) {
         this.worker = worker;
@@ -33,6 +36,7 @@ public class Scheduler implements Runnable, Comparable {
         while (true) {
             try {
                 AbstractJob job = worker.getJob();
+
                 if (JobStatus.FINISHED.getStatus() == job.getStatus()) {
                     log.info("job【{}】任务结束", job.getClass().getName());
                     continue;
@@ -45,9 +49,17 @@ public class Scheduler implements Runnable, Comparable {
                     executor.submit(job);
                     worker.addJob(job);
                 }
+                //完成后就删除job
+                if (JobStatus.FINISHED.getStatus() == job.getStatus()) {
+                    service.delete(job);
+                    worker.removePersistJob(job);
+                }
+
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
     }
+
+
 }

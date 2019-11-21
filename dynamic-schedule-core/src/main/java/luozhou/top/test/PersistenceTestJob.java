@@ -15,5 +15,6 @@ public class PersistenceTestJob extends AbstractJob<Teacher> {
     @Override
     public void run() {
         log.info("我执行啦{}");
+        setStatus(getStatus() + 1);
     }
 }

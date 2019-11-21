@@ -2,6 +2,8 @@ package luozhou.top.core;
 
 import lombok.extern.slf4j.Slf4j;
 import luozhou.top.config.ScheduleConfig;
+import luozhou.top.core.persistence.service.JobPersistenceService;
+import luozhou.top.core.persistence.service.impl.JobPersistenceServiceImpl;
 
 import java.util.concurrent.PriorityBlockingQueue;
 
@@ -14,7 +16,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 public class DefaultWorker implements Iworker {
     private PriorityBlockingQueue<AbstractJob> queue = new PriorityBlockingQueue(10);
     private PriorityBlockingQueue<AbstractJob> persistQueue = new PriorityBlockingQueue(10);
-
+    private JobPersistenceService service = new JobPersistenceServiceImpl();
     private DefaultWorker(PriorityBlockingQueue<AbstractJob> queue) {
         this.queue = queue;
     }
@@ -31,12 +33,18 @@ public class DefaultWorker implements Iworker {
             job.setTimeStamp(nextSecond + System.currentTimeMillis());
             queue.add(job);
             //开启持久化模式
-            if (config.isPersistence()) {
+            if (config.isPersistence()&&!persistQueue.contains(job)) {
                 log.info("开启了持久化模式");
-                persistQueue.add(job);
+                addPersistJob(job);
+                service.insert(job);
             }
         }
 
+    }
+
+    @Override
+    public void addPersistJob(AbstractJob job) {
+        persistQueue.add(job);
     }
 
     @Override
@@ -45,8 +53,8 @@ public class DefaultWorker implements Iworker {
     }
 
     @Override
-    public AbstractJob getPersistJob() throws InterruptedException {
-        return persistQueue.take();
+    public void  removePersistJob(AbstractJob job){
+        persistQueue.remove(job);
     }
 
     private static class SingletonHolder {
