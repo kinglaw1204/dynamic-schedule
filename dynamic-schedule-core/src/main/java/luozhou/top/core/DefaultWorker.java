@@ -2,10 +2,14 @@ package luozhou.top.core;
 
 import lombok.extern.slf4j.Slf4j;
 import luozhou.top.config.ScheduleConfig;
+import luozhou.top.constant.JobOperationType;
+import luozhou.top.constant.JobStatus;
+import luozhou.top.core.persistence.async.AsyncService;
 import luozhou.top.core.persistence.service.JobPersistenceService;
 import luozhou.top.core.persistence.service.impl.JobPersistenceServiceImpl;
 
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * @description:
@@ -14,12 +18,10 @@ import java.util.concurrent.PriorityBlockingQueue;
  **/
 @Slf4j
 public class DefaultWorker implements Iworker {
-    private PriorityBlockingQueue<AbstractJob> queue = new PriorityBlockingQueue(10);
-    private PriorityBlockingQueue<AbstractJob> persistQueue = new PriorityBlockingQueue(10);
+    private static PriorityBlockingQueue<AbstractJob> queue = new PriorityBlockingQueue(10);
+    private static PriorityBlockingQueue<AbstractJob> persistQueue = new PriorityBlockingQueue(10);
     private JobPersistenceService service = new JobPersistenceServiceImpl();
-    private DefaultWorker(PriorityBlockingQueue<AbstractJob> queue) {
-        this.queue = queue;
-    }
+    private ThreadPoolExecutor dbThreadPool;
 
     private DefaultWorker() {
 
@@ -27,17 +29,34 @@ public class DefaultWorker implements Iworker {
 
     @Override
     public void addJob(AbstractJob job) {
-        ScheduleConfig config =ScheduleConfig.getConfig();
+        ScheduleConfig config = ScheduleConfig.getConfig();
         long nextSecond = job.getStrategy().doGetNextSecond();
-        if (nextSecond > -1L) {
-            job.setTimeStamp(nextSecond + System.currentTimeMillis());
-            queue.add(job);
-            //开启持久化模式
-            if (config.isPersistence()&&!persistQueue.contains(job)) {
-                log.info("开启了持久化模式");
-                addPersistJob(job);
-                service.insert(job);
+        if (nextSecond <= -1L) {
+            //执行策略全部执行完，设置job状态为结束
+            job.setStatus(JobStatus.FINISHED.getStatus());
+            //提交删除持久化job
+            if (config.isPersistence()) {
+                dbThreadPool.submit(new AsyncService(service, JobOperationType.DELETE, job));
             }
+            return;
+        }
+        job.setTimeStamp(nextSecond + System.currentTimeMillis());
+        queue.add(job);
+
+        if (!config.isPersistence()) {
+            return;
+        }
+        //开启持久化模式
+        log.debug("开启了持久化模式");
+        if (!persistQueue.contains(job)) {
+            addPersistJob(job);
+            log.debug("插入job{}", job.toString());
+            dbThreadPool.submit(new AsyncService(service, JobOperationType.INSERT, job));
+
+        } else {
+            log.debug("更新job{}", job.toString());
+            dbThreadPool.submit(new AsyncService(service, JobOperationType.UPDATE, job));
+
         }
 
     }
@@ -53,15 +72,19 @@ public class DefaultWorker implements Iworker {
     }
 
     @Override
-    public void  removePersistJob(AbstractJob job){
+    public void removePersistJob(AbstractJob job) {
         persistQueue.remove(job);
     }
 
     private static class SingletonHolder {
-        private static final Iworker iworker = new DefaultWorker();
+        private static final DefaultWorker iworker = new DefaultWorker();
     }
 
-    public static Iworker getWorker() {
+    public static DefaultWorker getWorker() {
         return SingletonHolder.iworker;
+    }
+
+    public void setDbThreadPool(ThreadPoolExecutor dbThreadPool) {
+        this.dbThreadPool = dbThreadPool;
     }
 }

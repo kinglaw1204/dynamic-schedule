@@ -14,7 +14,22 @@ import luozhou.top.core.AbstractJob;
 public class PersistenceTestJob extends AbstractJob<Teacher> {
     @Override
     public void run() {
-        log.info("我执行啦{}");
+        log.info("我执行啦{}",getStatus());
         setStatus(getStatus() + 1);
     }
+
+    @Override
+    public String toString() {
+        return super.toString();
+    }
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+       return super.hashCode();
+    }
+
 }

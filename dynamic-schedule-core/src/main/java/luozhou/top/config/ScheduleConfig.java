@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 public class ScheduleConfig {
     private static final String EXECUTOR_POOL_NAME = "executor-pool";
     private static final String JOB_POOL_NAME = "job-pool";
+    private static final String PERSISTENCE_POOL_NAME = "db_persistence";
     private static ScheduleConfig config;
     /***默认核心线程数*/
     private int defaultCoreThreadNum = 4;
@@ -43,6 +44,7 @@ public class ScheduleConfig {
      */
     private String jdbcUrl;
 
+
     public ScheduleConfig() {
     }
 
@@ -57,9 +59,13 @@ public class ScheduleConfig {
         Scheduler scheduler = new Scheduler(DefaultWorker.getWorker(), executor);
         ThreadPoolExecutor jobPool = scheduleThreadPoolFactory.createThreadPool(JOB_POOL_NAME, 1, 1, 0L, TimeUnit.SECONDS);
         jobPool.submit(scheduler);
+        if (persistence) {
+            ThreadPoolExecutor dbThreadPool = scheduleThreadPoolFactory.createThreadPool(PERSISTENCE_POOL_NAME, 1, 2, 0L, TimeUnit.SECONDS);
+            scheduler.setDbThreadPool(dbThreadPool);
+            DefaultWorker.getWorker().setDbThreadPool(dbThreadPool);
+        }
         config = this;
         freshJob();
-
     }
 
     public static ScheduleConfig getConfig() {
@@ -71,11 +77,11 @@ public class ScheduleConfig {
      */
     private void freshJob() {
         JobPersistenceService service = new JobPersistenceServiceImpl();
-        List<AbstractJob> ls = service.queryJobWithNotDone();
+        List<AbstractJob> ls = service.queryAllJob();
         Iworker worker = DefaultWorker.getWorker();
         if (ls != null && ls.size() > 0) {
             ls.forEach(item -> {
-                if (persistence){
+                if (persistence) {
                     worker.addPersistJob(item);
                 }
                 worker.addJob(item);

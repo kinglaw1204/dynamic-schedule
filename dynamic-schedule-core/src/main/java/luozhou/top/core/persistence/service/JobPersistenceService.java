@@ -32,5 +32,5 @@ public interface JobPersistenceService {
     /** 查询所有未完成的job
      * @return
      */
-    List<AbstractJob> queryJobWithNotDone();
+    List<AbstractJob> queryAllJob();
 }

@@ -1,7 +1,10 @@
 package luozhou.top.core;
 
 import lombok.extern.slf4j.Slf4j;
+import luozhou.top.config.ScheduleConfig;
+import luozhou.top.constant.JobOperationType;
 import luozhou.top.constant.JobStatus;
+import luozhou.top.core.persistence.async.AsyncService;
 import luozhou.top.core.persistence.service.JobPersistenceService;
 import luozhou.top.core.persistence.service.impl.JobPersistenceServiceImpl;
 
@@ -19,6 +22,7 @@ public class Scheduler implements Runnable, Comparable {
     private Iworker worker;
 
     private ThreadPoolExecutor executor;
+    private ThreadPoolExecutor dbThreadPool;
     private JobPersistenceService service = new JobPersistenceServiceImpl();
 
     public Scheduler(Iworker worker, ThreadPoolExecutor executor) {
@@ -38,7 +42,7 @@ public class Scheduler implements Runnable, Comparable {
                 AbstractJob job = worker.getJob();
 
                 if (JobStatus.FINISHED.getStatus() == job.getStatus()) {
-                    log.info("job【{}】任务结束", job.getClass().getName());
+                    log.debug("job【{}】任务结束", job.getClass().getName());
                     continue;
                 }
                 Long time = job.getTimeStamp() - System.currentTimeMillis();
@@ -50,9 +54,11 @@ public class Scheduler implements Runnable, Comparable {
                     worker.addJob(job);
                 }
                 //完成后就删除job
-                if (JobStatus.FINISHED.getStatus() == job.getStatus()) {
-                    service.delete(job);
+                if (ScheduleConfig.getConfig().isPersistence() && (JobStatus.FINISHED.getStatus() == job.getStatus()
+                        || JobStatus.COMPLETED.getStatus() == job.getStatus())) {
+                    dbThreadPool.submit(new AsyncService(service, JobOperationType.DELETE, job));
                     worker.removePersistJob(job);
+                    log.debug("删除job{}", job.toString());
                 }
 
             } catch (InterruptedException e) {
@@ -61,5 +67,7 @@ public class Scheduler implements Runnable, Comparable {
         }
     }
 
-
+    public void setDbThreadPool(ThreadPoolExecutor dbThreadPool) {
+        this.dbThreadPool = dbThreadPool;
+    }
 }

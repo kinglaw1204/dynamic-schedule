@@ -1,7 +1,6 @@
 package luozhou.top.core.persistence.service.impl;
 
 import com.alibaba.fastjson.JSON;
-import luozhou.top.constant.JobStatus;
 import luozhou.top.core.AbstractJob;
 import luozhou.top.core.persistence.config.HikariCPDataSource;
 import luozhou.top.core.persistence.service.JobPersistenceService;
@@ -69,7 +68,7 @@ public class JobPersistenceServiceImpl implements JobPersistenceService {
     }
 
     @Override
-    public List<AbstractJob> queryJobWithNotDone() {
+    public List<AbstractJob> queryAllJob() {
         QueryRunner run = new QueryRunner(HikariCPDataSource.getDataSource());
         ResultSetHandler<List<AbstractJob>> handler = new ResultSetHandler<List<AbstractJob>>() {
             @Override
@@ -80,7 +79,7 @@ public class JobPersistenceServiceImpl implements JobPersistenceService {
                     int cols = meta.getColumnCount();
                     try {
                         AbstractJob job = (AbstractJob) Class.forName(rs.getString("class_job")).newInstance();
-                        job.setId(rs.getLong("id"));
+                        job.setId(rs.getString("id"));
                         job.setStatus(rs.getInt("status"));
                         job.setTimeStamp(rs.getLong("timestamp"));
                         job.setBody(new DefaultSerializer().toObj(rs.getString("body"), Class.forName(rs.getString("class_body"))));
@@ -99,7 +98,8 @@ public class JobPersistenceServiceImpl implements JobPersistenceService {
         };
         List<AbstractJob> result = null;
         try {
-            result = run.query("select * from tb_job where status = ? or status = ? ", handler,JobStatus.START.getStatus(),JobStatus.RUNNING.getStatus());
+           // result = run.query("select * from tb_job where status = ? or status = ? ", handler,JobStatus.START.getStatus(),JobStatus.RUNNING.getStatus());
+            result = run.query("select * from tb_job ", handler);
 
         } catch (SQLException e) {
             e.printStackTrace();
