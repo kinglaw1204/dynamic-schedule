@@ -61,7 +61,7 @@ public class PersistenceTestJob extends AbstractJob<Teacher> {
     public void run() {
         log.info("我执行啦{}",getStatus());
         log.info("获取数据实体{}",getBody());
-        setStatus(JobStatus.COMPLETED);
+        setStatus(JobStatus.COMPLETED.getStatus());
     }
 
     @Override
