@@ -14,11 +14,11 @@ import java.sql.SQLException;
  * @create: 2019-10-15 11:00
  **/
 public class HikariCPDataSource {
-    private static HikariConfig config = new HikariConfig();
     private static HikariDataSource ds;
 
-    static {
-        config.setJdbcUrl(ScheduleConfig.getConfig().getJdbcUrl());
+    public void init(ScheduleConfig scheduleConfig) {
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(scheduleConfig.getJdbcUrl());
         config.addDataSourceProperty("cachePrepStmts", "true");
         config.addDataSourceProperty("prepStmtCacheSize", "250");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
@@ -29,8 +29,18 @@ public class HikariCPDataSource {
         return ds.getConnection();
     }
 
-    public static DataSource getDataSource(){
+    private static class SingletonHolder {
+        private static final HikariCPDataSource source = new HikariCPDataSource();
+    }
+
+    public static HikariCPDataSource getHikariCPDataSource() {
+        return SingletonHolder.source;
+    }
+
+    public static DataSource getDataSource() {
         return ds;
     }
-    private HikariCPDataSource(){}
+
+    private HikariCPDataSource() {
+    }
 }

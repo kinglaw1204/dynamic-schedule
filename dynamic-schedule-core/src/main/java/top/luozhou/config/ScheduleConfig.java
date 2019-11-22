@@ -5,6 +5,7 @@ import top.luozhou.core.AbstractJob;
 import top.luozhou.core.DefaultWorker;
 import top.luozhou.core.Iworker;
 import top.luozhou.core.Scheduler;
+import top.luozhou.core.persistence.config.HikariCPDataSource;
 import top.luozhou.core.persistence.service.JobPersistenceService;
 import top.luozhou.core.persistence.service.impl.JobPersistenceServiceImpl;
 import top.luozhou.pool.ScheduleThreadPoolFactory;
@@ -60,12 +61,14 @@ public class ScheduleConfig {
         ThreadPoolExecutor jobPool = scheduleThreadPoolFactory.createThreadPool(JOB_POOL_NAME, 1, 1, 0L, TimeUnit.SECONDS);
         jobPool.submit(scheduler);
         if (persistence) {
+            HikariCPDataSource.getHikariCPDataSource().init(this);
             ThreadPoolExecutor dbThreadPool = scheduleThreadPoolFactory.createThreadPool(PERSISTENCE_POOL_NAME, 1, 2, 0L, TimeUnit.SECONDS);
             scheduler.setDbThreadPool(dbThreadPool);
             DefaultWorker.getWorker().setDbThreadPool(dbThreadPool);
+            freshJob();
         }
         config = this;
-        freshJob();
+
     }
 
     public static ScheduleConfig getConfig() {

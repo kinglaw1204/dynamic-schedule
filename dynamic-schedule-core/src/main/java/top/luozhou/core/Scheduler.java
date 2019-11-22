@@ -49,7 +49,7 @@ public class Scheduler implements Runnable, Comparable {
                 if (time > 0) {
                     Thread.sleep(time);
                 }
-                if (JobStatus.FINISHED.getStatus() != job.getStatus()) {
+                if (JobStatus.FINISHED.getStatus() != job.getStatus() && JobStatus.COMPLETED.getStatus() != job.getStatus()) {
                     executor.submit(job);
                     worker.addJob(job);
                 }
