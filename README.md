@@ -52,7 +52,81 @@ public static void main(String[] args) {
 
 启动成功即可
 
-**5.添加job**
+**5.定义job**
+
+```java
+@Slf4j
+public class PersistenceTestJob extends AbstractJob<Teacher> {
+    @Override
+    public void run() {
+        log.info("我执行啦{}",getStatus());
+        log.info("获取数据实体{}",getBody());
+        setStatus(JobStatus.COMPLETED);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+       return super.hashCode();
+    }
+
+}
+```
+
+上述代码中，`run`方法中是实现自己的业务逻辑，`hashCode`方法和`equals`重写，在持久化模式必须，直接复制就好，普通模式可以忽略。
+
+`getBody()`可以获取job中传入的实体数据，获取后可以完成业务操作。
+
+`setStatus(JobStatus.COMPLETED)`表示操作完成，设置完成状态，调度策略不会执行下一个策略,如果还需要继续调度，不设置状态即可。
+
+
+
+**6.定义策略（非必须，可以用内置策略）**
+
+```java
+public class MultiTimesStragegy implements IStrategy {
+    /**
+     * 设置执行时间间隔，单位是毫秒，比如间隔是一秒，执行三次，数组设置元素为 [1000,2000,3000] */
+    private long[] times;
+    private int pos;
+
+    public MultiTimesStragegy(long[] times) {
+        this.times = times;
+    }
+
+    public MultiTimesStragegy() {
+    }
+
+    @Override
+    public  Long doGetNextSecond() {
+        if (null == times || times.length<=0){
+            log.error("执行策略时间为空，请设置执行策略时间！");
+            return -1L;
+        }
+        while (pos < times.length) {
+            return times[pos++];
+        }
+        return -1L;
+    }
+
+    @Override
+    public Long doGetCurrentSecond() {
+        if (times == null){
+            times =new long[1];
+        }
+        return times[pos];
+    }
+```
+
+实现策略接口即可，重写`doGetCurrentSecond`和`doGetNextSecond`方法即可，上述是内置的多间隔策略实现代码。
+
+
+
+**6.添加job**
 
 ```java
 /**获取一个job添加器worker*/ 
