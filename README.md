@@ -9,7 +9,7 @@ dynamic-schedule是一款轻量级调度框架，它主要解决传统调度框�
 
 ## 快速开始
 
-###普通模式
+### 普通模式
 
 **1.下载代码**
 
@@ -88,7 +88,7 @@ worker.addJob(job);
 
 
 ## 架构设计
-![images](https://github.com/kinglaw1204/dynamic-schedule/blob/master/images/%E6%9E%B6%E6%9E%84%E5%9B%BE.png?raw=true 架构图)
+![images](https://github.com/kinglaw1204/dynamic-schedule/blob/master/images/%E6%9E%B6%E6%9E%84%E5%9B%BE.png?raw=true)
 
 
 ## TODOLIST
