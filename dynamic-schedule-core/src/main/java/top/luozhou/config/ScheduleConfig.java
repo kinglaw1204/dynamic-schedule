@@ -57,13 +57,15 @@ public class ScheduleConfig {
     public void init() {
         ScheduleThreadPoolFactory scheduleThreadPoolFactory = new ScheduleThreadPoolFactory();
         ThreadPoolExecutor executor = scheduleThreadPoolFactory.createThreadPool(EXECUTOR_POOL_NAME, defaultCoreThreadNum, defaultMaxThreadNum, 0L, TimeUnit.SECONDS);
-        Scheduler scheduler = new Scheduler(DefaultWorker.getWorker(), executor);
+         OprationConfig oprationConfig = new OprationConfig(DefaultWorker.getWorker(),executor);
+        Scheduler scheduler = new Scheduler(oprationConfig);
         ThreadPoolExecutor jobPool = scheduleThreadPoolFactory.createThreadPool(JOB_POOL_NAME, 1, 1, 0L, TimeUnit.SECONDS);
         jobPool.submit(scheduler);
         if (persistence) {
             HikariCPDataSource.getHikariCPDataSource().init(this);
             ThreadPoolExecutor dbThreadPool = scheduleThreadPoolFactory.createThreadPool(PERSISTENCE_POOL_NAME, 1, 2, 0L, TimeUnit.SECONDS);
-            scheduler.setDbThreadPool(dbThreadPool);
+            oprationConfig.setDbThreadPool(dbThreadPool);
+            oprationConfig.setService(new JobPersistenceServiceImpl());
             DefaultWorker.getWorker().setDbThreadPool(dbThreadPool);
             freshJob();
         }
