@@ -1,7 +1,6 @@
 package top.luozhou.test;
 
 import lombok.extern.slf4j.Slf4j;
-import top.luozhou.constant.JobStatus;
 import top.luozhou.core.AbstractJob;
 
 /**
@@ -13,9 +12,8 @@ import top.luozhou.core.AbstractJob;
 public class PersistenceTestJob extends AbstractJob<Teacher> {
     @Override
     public void run() {
-        log.info("我执行啦{}",getStatus());
         log.info("获取数据实体{}",getBody());
-        setStatus(JobStatus.COMPLETED.getStatus());
+      //  setStatus(JobStatus.COMPLETED.getStatus());
     }
 
     @Override

@@ -55,6 +55,7 @@ public class ScheduleConfig {
     }
 
     public void init() {
+        config = this;
         ScheduleThreadPoolFactory scheduleThreadPoolFactory = new ScheduleThreadPoolFactory();
         ThreadPoolExecutor executor = scheduleThreadPoolFactory.createThreadPool(EXECUTOR_POOL_NAME, defaultCoreThreadNum, defaultMaxThreadNum, 0L, TimeUnit.SECONDS);
          OprationConfig oprationConfig = new OprationConfig(DefaultWorker.getWorker(),executor);
@@ -69,7 +70,7 @@ public class ScheduleConfig {
             DefaultWorker.getWorker().setDbThreadPool(dbThreadPool);
             freshJob();
         }
-        config = this;
+
 
     }
 
